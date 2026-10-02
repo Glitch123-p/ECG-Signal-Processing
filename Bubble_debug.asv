@@ -1,0 +1,38 @@
+clear all;
+close all;
+clc;
+
+load('ECG_raw.mat');
+
+% Rename ECG data to avoid conflict with MATLAB's ecg function
+ecg_raw = ecg;
+
+% QRS-focused filter
+[b_qrs, a_qrs] = butter(3, [5 20]/(Fs/2), 'bandpass');
+
+ecg_qrs = filtfilt(b_qrs, a_qrs, ecg_raw);
+
+% First 5 seconds
+N5 = 5 * Fs;
+
+figure;
+
+subplot(2,1,1);
+plot(t(1:N5), ecg_raw(1:N5));
+xlabel('Time (seconds)');
+ylabel('ADC');
+title('Raw ECG - First 5 Seconds');
+grid on;
+
+subplot(2,1,2);
+plot(t(1:N5), ecg_qrs(1:N5));
+xlabel('Time (seconds)');
+ylabel('Amplitude');
+title('QRS Detection Signal - 5 to 20 Hz');
+grid on;
+
+% Save
+save('ECG_processed.mat', 'ecg_raw', 'ecg_filtered', ...
+     'ecg_qrs', 't', 'Fs');
+
+disp('ECG processing completed.');
